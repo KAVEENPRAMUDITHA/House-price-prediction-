@@ -7,6 +7,7 @@ import plotly.express as px  # type: ignore
 import pickle
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -102,6 +103,175 @@ def calculate_metrics(y_true, y_pred):
     r2 = r2_score(y_true, y_pred)
     return mse, rmse, mae, r2
 
+def retrain_model():
+    """Retrain the model with current scikit-learn version"""
+    st.info("🔄 Retraining Boston Housing Price Predictor Model")
+    
+    # Load data
+    try:
+        data = pd.read_csv('data/dataset.csv')
+        st.success(f"✅ Data loaded successfully: {data.shape}")
+    except Exception as e:
+        st.error(f"❌ Error loading data: {e}")
+        return False
+    
+    # Prepare features and target
+    X = data.drop('MEDV', axis=1)
+    y = data['MEDV']
+    
+    st.write(f"📊 Features: {X.shape[1]}")
+    st.write(f"🎯 Target: {y.name}")
+    
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    
+    st.write(f"📈 Training samples: {X_train.shape[0]}")
+    st.write(f"🧪 Test samples: {X_test.shape[0]}")
+    
+    # Train Random Forest model
+    with st.spinner("🤖 Training Random Forest model..."):
+        model = RandomForestRegressor(
+            n_estimators=100,
+            max_depth=10,
+            random_state=42,
+            n_jobs=-1
+        )
+        
+        model.fit(X_train, y_train)
+        st.success("✅ Model training completed!")
+    
+    # Make predictions
+    y_pred = model.predict(X_test)
+    
+    # Calculate metrics
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    
+    st.write("📊 Model Performance:")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("R² Score", f"{r2:.4f}")
+    with col2:
+        st.metric("RMSE", f"{rmse:.4f}")
+    with col3:
+        st.metric("MAE", f"{mae:.4f}")
+    with col4:
+        st.metric("MSE", f"{mse:.4f}")
+    
+    # Save the model
+    try:
+        with open('model.pkl', 'wb') as f:
+            pickle.dump(model, f)
+        st.success("💾 Model saved successfully as 'model.pkl'")
+    except Exception as e:
+        st.error(f"❌ Error saving model: {e}")
+        return False
+    
+    # Test loading the model
+    try:
+        with open('model.pkl', 'rb') as f:
+            loaded_model = pickle.load(f)
+        
+        # Test prediction
+        test_prediction = loaded_model.predict(X_test.iloc[0:1])[0]
+        st.success(f"✅ Model loading test successful: ${test_prediction:.2f}k")
+        
+    except Exception as e:
+        st.error(f"❌ Error testing model loading: {e}")
+        return False
+    
+    st.success("🎉 Model retraining completed successfully!")
+    return True
+
+def test_data_loading():
+    """Test if data can be loaded correctly"""
+    try:
+        data = pd.read_csv('data/dataset.csv')
+        st.success(f"✅ Data loaded successfully: {data.shape}")
+        st.write(f"   Columns: {list(data.columns)}")
+        return data
+    except Exception as e:
+        st.error(f"❌ Error loading data: {e}")
+        return None
+
+def test_model_loading():
+    """Test if model can be loaded correctly"""
+    try:
+        with open('model.pkl', 'rb') as f:
+            model = pickle.load(f)
+        st.success(f"✅ Model loaded successfully: {type(model)}")
+        return model
+    except Exception as e:
+        st.error(f"❌ Error loading model: {e}")
+        return None
+
+def test_prediction(data, model):
+    """Test if model can make predictions"""
+    try:
+        # Use first row as test data
+        test_data = data.drop('MEDV', axis=1).iloc[0:1]
+        prediction = model.predict(test_data)[0]
+        st.success(f"✅ Prediction successful: ${prediction:.2f}k")
+        return True
+    except Exception as e:
+        st.error(f"❌ Error making prediction: {e}")
+        return False
+
+def test_metrics_calculation(data, model):
+    """Test if metrics can be calculated"""
+    try:
+        X = data.drop('MEDV', axis=1)
+        y = data['MEDV']
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        y_pred = model.predict(X_test)
+        
+        mse = mean_squared_error(y_test, y_pred)
+        rmse = np.sqrt(mse)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        
+        st.success("✅ Metrics calculated successfully:")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("R² Score", f"{r2:.4f}")
+        with col2:
+            st.metric("RMSE", f"{rmse:.4f}")
+        with col3:
+            st.metric("MAE", f"{mae:.4f}")
+        with col4:
+            st.metric("MSE", f"{mse:.4f}")
+        return True
+    except Exception as e:
+        st.error(f"❌ Error calculating metrics: {e}")
+        return False
+
+def run_tests():
+    """Run all tests for the application"""
+    st.info("🧪 Testing Boston Housing Price Predictor App Components")
+    
+    # Test data loading
+    data = test_data_loading()
+    if data is None:
+        return
+    
+    # Test model loading
+    model = test_model_loading()
+    if model is None:
+        return
+    
+    # Test prediction
+    test_prediction(data, model)
+    
+    # Test metrics calculation
+    test_metrics_calculation(data, model)
+    
+    st.success("🎉 All tests completed!")
+
 def main():
     # Load data and model
     data = load_data()
@@ -115,7 +285,7 @@ def main():
     st.sidebar.title("🏠 Navigation")
     page = st.sidebar.selectbox(
         "Choose a section:",
-        ["🏠 Home", "📊 Data Exploration", "📈 Visualizations", "🔮 Model Prediction", "📋 Model Performance"]
+        ["🏠 Home", "📊 Data Exploration", "📈 Visualizations", "🔮 Model Prediction", "📋 Model Performance", "🔄 Retrain Model", "🧪 Run Tests"]
     )
     
     # Main content based on selected page
@@ -129,6 +299,40 @@ def main():
         show_model_prediction(data, model)
     elif page == "📋 Model Performance":
         show_model_performance(data, model)
+    elif page == "🔄 Retrain Model":
+        show_retrain_model()
+    elif page == "🧪 Run Tests":
+        show_run_tests()
+
+def show_retrain_model():
+    """Display the retrain model section"""
+    st.markdown('<h1 class="main-header">🔄 Retrain Model</h1>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+    <h3>🔄 Model Retraining</h3>
+    <p>This section allows you to retrain the machine learning model with the current dataset. 
+    This is useful when you want to update the model with new data or improve its performance.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("🔄 Start Model Retraining", type="primary"):
+        retrain_model()
+
+def show_run_tests():
+    """Display the run tests section"""
+    st.markdown('<h1 class="main-header">🧪 Run Tests</h1>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+    <h3>🧪 Application Testing</h3>
+    <p>This section runs comprehensive tests to ensure all components of the application are working correctly. 
+    It tests data loading, model loading, predictions, and metrics calculations.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("🧪 Run All Tests", type="primary"):
+        run_tests()
 
 def show_home_page(data):
     """Display the home page with project overview"""
@@ -715,7 +919,6 @@ def show_model_performance(data, model):
     st.markdown('<h1 class="main-header">📋 Model Performance</h1>', unsafe_allow_html=True)
     
     # Split data for evaluation
-    from sklearn.model_selection import train_test_split
     X = data.drop('MEDV', axis=1)
     y = data['MEDV']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
