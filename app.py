@@ -276,10 +276,21 @@ def main():
     # Load data and model
     data = load_data()
     model = load_model()
-    
+
+    # User-friendly error handling for missing files
+    import os
+    missing_files = []
+    if not os.path.exists('data/dataset.csv'):
+        missing_files.append('data/dataset.csv')
+    if not os.path.exists('model.pkl'):
+        missing_files.append('model.pkl')
+    if missing_files:
+        st.error(f"Missing required file(s): {', '.join(missing_files)}. Please ensure all files are present in your repository.")
+        st.stop()
+
     if data is None or model is None:
-        st.error("Failed to load data or model. Please check your files.")
-        return
+        st.error("Failed to load data or model. Please check your files and their formats.")
+        st.stop()
     
     # Sidebar navigation
     st.sidebar.title("🏠 Navigation")
