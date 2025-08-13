@@ -171,7 +171,7 @@ streamlit run app.py
    ```
 
 2. **Deploy to Streamlit Cloud**
-   - Go to [share.streamlit.io](https://share.streamlit.io)
+   - Go to [share.streamlit.io](https://bostonhousepredict.streamlit.app/)
    - Connect your GitHub account
    - Select your repository
    - Configure deployment settings
@@ -221,14 +221,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Plotly for interactive visualizations
 - Scikit-learn for machine learning algorithms
 
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/your-repo/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
----
 
 **Built with ❤️ using Streamlit | Machine Learning Model Deployment Project** 
