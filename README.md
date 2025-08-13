@@ -1,6 +1,6 @@
 # 🏠 Boston Housing Price Predictor
 
-A comprehensive machine learning application for predicting housing prices in Boston using the Boston Housing dataset. This project demonstrates a complete ML pipeline from data exploration to model deployment using Streamlit.
+A comprehensive machine learning application for predicting housing prices in Boston using the Boston Housing dataset. This project demonstrates a complete ML pipeline from data exploration to model deployment using Streamlit. steamlit URL: [click](https://bostonhousepredict.streamlit.app/)
 
 ## 📋 Project Overview
 
